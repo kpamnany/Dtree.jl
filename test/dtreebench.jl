@@ -18,7 +18,7 @@ end
 
 const cpu_hz = 2.3e9
 
-const libdtree = joinpath(Pkg.dir("Dtree"), "deps", "Dtree",
+const libdtree = joinpath(dirname(dirname(@__FILE__)), "deps", "Dtree",
         "libdtree.$(Libdl.dlext)")
 
 @inline rdtsc() = ccall((:rdtsc, libdtree), Culonglong, ())
