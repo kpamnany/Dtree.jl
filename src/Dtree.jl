@@ -1,19 +1,8 @@
 module Dtree
 
-#if VERSION > v"0.5.0-dev"
-if isdefined(Base, :Threads)
-    using Base.Threads
-    enter_gc_safepoint() = ccall(:jl_gc_safe_enter, Int8, ())
-    leave_gc_safepoint(gs) = ccall(:jl_gc_safe_leave, Void, (Int8,), gs)
-else
-    # Pre-Julia 0.5 there are no threads
-    nthreads() = 1
-    threadid() = 1
-    enter_gc_safepoint() = 1
-    leave_gc_safepoint(gs) = 1
-end
+using Base.Threads
 
-export DtreeScheduler, dt_nnodes, dt_nodeid, initwork, getwork, runtree, cpu_pause
+export DtreeScheduler, nnodes, nodeid, initwork, getwork, runtree, cpu_pause
 
 const fan_out = 2048
 const drain_rate = 0.4
@@ -21,12 +10,15 @@ const drain_rate = 0.4
 const libdtree = joinpath(Pkg.dir("Dtree"), "deps", "Dtree",
         "libdtree.$(Libdl.dlext)")
 
+enter_gc_safepoint() = ccall(:jl_gc_safe_enter, Int8, ())
+leave_gc_safepoint(gs) = ccall(:jl_gc_safe_leave, Void, (Int8,), gs)
+
 function __init__()
     ccall((:dtree_init, libdtree), Cint, (Cint, Ptr{Ptr{UInt8}}),
           length(ARGS), ARGS)
-    global const dt_nnodes =
+    global const nnodes =
 	    Int(ccall((:dtree_nnodes, libdtree), Cint, ()))
-    global const dt_nodeid =
+    global const nodeid =
 	    Int(ccall((:dtree_nodeid, libdtree), Cint, ())+1)
     atexit() do
         ccall((:dtree_shutdown, libdtree), Cint, ())
@@ -92,8 +84,8 @@ function runtree(dt::DtreeScheduler)
     Bool(r > 0)
 end
 
+@inline sync() = ccall((:dtree_sync, libgarbo), Void, ())
 @inline cpu_pause() = ccall((:cpu_pause, libdtree), Void, ())
-
 @inline rdtsc() = ccall((:rdtsc, libdtree), Culonglong, ())
 
 end # module
