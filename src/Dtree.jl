@@ -2,7 +2,7 @@ module Dtree
 
 using Base.Threads
 
-export DtreeScheduler, nnodes, nodeid, initwork, getwork, runtree, cpu_pause
+export DtreeScheduler, nnodes, nodeid, initwork, getwork, runtree, sync, cpu_pause
 
 const fan_out = 2048
 const drain_rate = 0.4
@@ -84,7 +84,7 @@ function runtree(dt::DtreeScheduler)
     Bool(r > 0)
 end
 
-@inline sync() = ccall((:dtree_sync, libgarbo), Void, ())
+@inline sync() = ccall((:dtree_sync, libdtree), Void, ())
 @inline cpu_pause() = ccall((:cpu_pause, libdtree), Void, ())
 @inline rdtsc() = ccall((:rdtsc, libdtree), Culonglong, ())
 
