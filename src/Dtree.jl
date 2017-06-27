@@ -7,7 +7,7 @@ export DtreeScheduler, nnodes, nodeid, initwork, getwork, runtree, sync, cpu_pau
 const fan_out = 2048
 const drain_rate = 0.4
 
-const libdtree = joinpath(Pkg.dir("Dtree"), "deps", "Dtree",
+const libdtree = joinpath(dirname(dirname(@__FILE__)), "deps", "Dtree",
         "libdtree.$(Libdl.dlext)")
 
 enter_gc_safepoint() = ccall(:jl_gc_safe_enter, Int8, ())
